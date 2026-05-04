@@ -1,0 +1,1378 @@
+<!DOCTYPE html>
+
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>우리 캘린더</title>
+<style>
+/* 시스템 폰트 - 어디서나 동일하게 */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; user-select: none; -webkit-user-select: none; }
+
+:root {
+–bg:       #f7f5f2;
+–bg2:      #efece7;
+–white:    #ffffff;
+–oak:      #c4975a;
+–oak-l:    #e8d5b4;
+–oak-ll:   #f5ede0;
+–oak-d:    #9a7240;
+–cement:   #d4d0ca;
+–text:     #1e1c18;
+–text2:    #7a7368;
+–text3:    #b0aaa0;
+–her:      #b8956a;
+–her-l:    #f5ede0;
+–his:      #7a9e8a;
+–his-l:    #e8f0eb;
+–border:   rgba(180,170,155,0.25);
+–border2:  rgba(180,170,155,0.5);
+–shadow-s: 0 1px 4px rgba(60,50,30,0.07);
+–shadow-m: 0 4px 20px rgba(60,50,30,0.09);
+–shadow-l: 0 12px 40px rgba(60,50,30,0.12);
+–r:        4px;
+/* 시스템 폰트 변수 */
+–font-serif: Georgia, ‘Times New Roman’, serif;
+–font-sans:  -apple-system, BlinkMacSystemFont, ‘Apple SD Gothic Neo’, ‘Malgun Gothic’, sans-serif;
+}
+
+html { background: #faf6f1; }
+
+body {
+font-family: var(–font-sans);
+background: var(–bg);
+color: var(–text);
+min-height: 100dvh;
+max-width: 430px;
+margin: 0 auto;
+-webkit-font-smoothing: antialiased;
+}
+
+/* ── TOPBAR ───────────────────────── */
+.topbar {
+position: sticky; top: 0; z-index: 90;
+background: rgba(247,245,242,0.94);
+backdrop-filter: blur(20px);
+-webkit-backdrop-filter: blur(20px);
+border-bottom: 1px solid var(–border2);
+padding: 0 20px;
+height: 56px;
+display: flex; align-items: center; justify-content: space-between;
+}
+
+.logo {
+font-family: var(–font-serif);
+font-size: 20px; font-weight: 400;
+color: var(–text); letter-spacing: 1px;
+}
+.logo span {
+display: inline-block;
+width: 5px; height: 5px; border-radius: 50%;
+background: var(–oak); margin: 0 6px 2px;
+vertical-align: middle;
+}
+
+.top-right { display: flex; gap: 0; }
+.icon-btn {
+width: 38px; height: 38px; border-radius: 4px;
+border: none; background: transparent; color: #7a7368;
+font-size: 16px; cursor: pointer;
+display: flex; align-items: center; justify-content: center;
+transition: background 0.15s, color 0.15s;
+letter-spacing: 0;
+}
+.icon-btn:hover { background: #efece7; color: #1e1c18; }
+.icon-btn svg { width: 18px; height: 18px; stroke: currentColor; fill: none; stroke-width: 1.5; stroke-linecap: round; }
+
+/* ── PARTNER STRIP ────────────────── */
+.partner-strip {
+padding: 0 20px;
+display: flex; gap: 8px;
+border-bottom: 1px solid var(–border);
+background: var(–white);
+}
+.p-tab {
+flex: 1; padding: 13px 0;
+border: none; background: transparent;
+font-family: var(–font-sans); font-size: 12px; font-weight: 500;
+color: var(–text3); cursor: pointer; letter-spacing: 0.5px;
+position: relative; transition: color 0.2s;
+text-align: center;
+}
+.p-tab::after {
+content: ‘’; position: absolute; bottom: 0; left: 0; right: 0;
+height: 2px; background: transparent; transition: background 0.2s;
+}
+.p-tab.her.on { color: #b8956a; }
+.p-tab.her.on::after { background: #b8956a; }
+.p-tab.his.on { color: #7a9e8a; }
+.p-tab.his.on::after { background: #7a9e8a; }
+.p-tab:hover { color: var(–text2); }
+
+/* ── MONTH/WEEK NAV ───────────────── */
+.cal-nav {
+display: flex; align-items: center; justify-content: space-between;
+padding: 16px 20px 12px;
+background: var(–white);
+}
+.cal-nav-left { display: flex; flex-direction: column; gap: 2px; }
+.cal-period {
+font-family: var(–font-serif);
+font-size: 26px; font-weight: 300; color: var(–text);
+letter-spacing: -0.5px; line-height: 1;
+}
+.cal-period em { font-style: normal; font-size: 15px; color: var(–text2); margin-left: 4px; font-family: var(–font-sans); font-weight: 300; }
+.cal-sub { font-size: 11px; color: var(–text3); font-weight: 300; letter-spacing: 0.3px; margin-top: 2px; }
+
+.cal-nav-right { display: flex; align-items: center; gap: 6px; }
+
+/* view toggle */
+.view-toggle {
+display: flex;
+background: var(–bg2); border-radius: var(–r);
+padding: 2px; gap: 2px;
+}
+.vt-btn {
+padding: 5px 11px; border-radius: 3px; border: none;
+font-family: var(–font-sans); font-size: 11px; font-weight: 500;
+color: var(–text2); cursor: pointer; background: transparent;
+transition: all 0.18s; letter-spacing: 0.3px;
+}
+.vt-btn.on { background: var(–white); color: var(–text); box-shadow: var(–shadow-s); }
+
+.nav-arrows { display: flex; gap: 2px; margin-left: 4px; }
+.arrow-btn {
+width: 30px; height: 30px; border-radius: var(–r);
+border: 1px solid var(–border2); background: var(–white); color: var(–text2);
+font-size: 15px; cursor: pointer;
+display: flex; align-items: center; justify-content: center;
+transition: all 0.14s;
+}
+.arrow-btn:hover { background: var(–bg2); color: var(–text); }
+
+/* ── DOW HEADER ───────────────────── */
+.dow-row {
+display: grid; grid-template-columns: repeat(7,1fr);
+padding: 0 10px;
+background: var(–white);
+border-bottom: 1px solid var(–border);
+}
+.dow-row div {
+text-align: center; padding: 6px 0;
+font-size: 10px; font-weight: 700; color: var(–text2); letter-spacing: 0.8px;
+}
+.dow-row .s  { color: #c04030; }
+.dow-row .sa { color: #3a68a0; }
+
+/* ── MONTHLY SLIDER ───────────────── */
+.monthly-wrap {
+overflow: hidden;
+position: relative;
+background: var(–bg);
+}
+.monthly-wrap.off { display: none; }
+
+.monthly-slider {
+display: flex;
+width: 300%;
+transform: translateX(-33.333%);
+transition: transform 0.38s cubic-bezier(.4,0,.2,1);
+will-change: transform;
+align-items: flex-start;
+}
+.monthly-slider.no-transition {
+transition: none;
+}
+
+.monthly-panel {
+width: 33.333%;
+flex-shrink: 0;
+background: var(–bg);
+}
+.monthly-grid {
+display: grid; grid-template-columns: repeat(7,1fr);
+gap: 0; padding: 0 8px 16px;
+background: var(–bg);
+}
+
+.weekly-wrap { overflow: hidden; position: relative; }
+.weekly-inner {
+transition: opacity 0.24s ease, transform 0.28s cubic-bezier(.4,0,.2,1);
+}
+
+.m-cell {
+min-height: 80px; background: var(–bg);
+border-radius: 0;
+padding: 6px 4px 4px;
+display: flex; flex-direction: column; gap: 2px;
+cursor: pointer;
+border-top: 1px solid rgba(180,165,145,0.28);
+}
+/* 첫 번째 줄(이전달 날짜들 포함한 첫 행)은 위쪽 선 없앰 */
+.monthly-grid .m-cell:nth-child(-n+7) { border-top: none; }
+.m-cell.dim { opacity: 0.28; pointer-events: none; }
+
+.m-dnum {
+font-size: 13px; font-weight: 500;
+color: var(–text);
+padding: 0 2px; line-height: 1.8;
+font-family: var(–font-serif);
+}
+.m-cell.sun .m-dnum { color: #c04030; }
+.m-cell.sat .m-dnum { color: #3a68a0; }
+.m-cell.holiday .m-dnum { color: #c04030; font-weight: 600; }
+.m-cell.today .m-dnum {
+background: var(–oak); color: white;
+width: 22px; height: 22px; border-radius: 2px;
+display: flex; align-items: center; justify-content: center;
+font-size: 11px; padding: 0; font-family: var(–font-sans); font-weight: 600;
+}
+
+.ev-bar {
+height: 16px; border-radius: 2px;
+font-size: 8px; font-weight: 500; padding: 0 4px;
+white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+display: flex; align-items: center; letter-spacing: -0.1px;
+}
+.ev-dot-more { font-size: 8px; color: var(–text3); padding-left: 2px; }
+
+/* ── WEEKLY VIEW ──────────────────── */
+.weekly-wrap {
+display: none;
+flex-direction: column;
+background: var(–bg);
+}
+.weekly-wrap.on { display: flex; }
+.monthly-wrap.off { display: none; }
+
+.week-header {
+display: grid; grid-template-columns: 44px repeat(7,1fr);
+border-bottom: 1px solid var(–border2);
+background: var(–white);
+padding: 0 4px;
+}
+.week-header-empty { padding: 10px 0; }
+.week-day-col {
+display: flex; flex-direction: column; align-items: center; justify-content: center;
+padding: 10px 2px; cursor: pointer; transition: background 0.12s;
+border-radius: var(–r);
+}
+.week-day-col:hover { background: var(–oak-ll); }
+.week-day-col.today-col .wdc-d {
+background: var(–oak); color: white;
+width: 26px; height: 26px; border-radius: 4px;
+display: flex; align-items: center; justify-content: center;
+font-family: var(–font-sans); font-size: 13px; font-weight: 600;
+}
+
+.wdc-dow {
+font-size: 9px; font-weight: 700; color: var(–text3);
+letter-spacing: 0.8px; margin-bottom: 4px;
+text-align: center;
+}
+.wdc-dow.s { color: #c04030; }
+.wdc-dow.sa { color: #3a68a0; }
+.wdc-d {
+font-family: var(–font-serif);
+font-size: 18px; font-weight: 300; color: var(–text);
+line-height: 1; text-align: center;
+}
+
+/* week body */
+.week-body {
+flex: 1;
+background: var(–bg);
+padding: 0 0 90px;
+}
+.week-day-row {
+display: grid; grid-template-columns: 44px 1fr;
+min-height: 64px;
+border-bottom: 1px solid var(–border);
+background: var(–white);
+margin-bottom: 1px;
+}
+.week-time-label {
+display: flex; align-items: center; justify-content: center;
+font-size: 13px; font-weight: 600; color: var(–text);
+letter-spacing: 0.3px; background: var(–bg);
+border-right: 1px solid var(–border);
+}
+.week-ev-area {
+padding: 10px 12px;
+display: flex; flex-direction: column; gap: 5px;
+cursor: pointer;
+background: var(–white);
+}
+.week-ev-area.has-today {
+border-left: 2px solid var(–oak);
+padding-left: 10px;
+}
+
+.week-ev-item {
+padding: 7px 10px; border-radius: var(–r);
+font-size: 12px; font-weight: 400; color: var(–text);
+display: flex; align-items: center; gap: 8px;
+background: var(–white);
+border: 1px solid var(–border);
+border-left: 3px solid transparent;
+}
+.week-ev-time { font-size: 10px; color: var(–text2); min-width: 32px; font-weight: 300; }
+.week-ev-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+.week-no-ev {
+font-size: 11px; color: var(–text3);
+padding: 16px 0; letter-spacing: 0.2px; font-weight: 300;
+}
+
+/* ── DAY DETAIL PANEL ─────────────── */
+.day-panel {
+display: none; position: fixed; inset: 0;
+background: rgba(30,28,24,0.25);
+backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+z-index: 200; align-items: flex-end; justify-content: center;
+}
+.day-panel.on { display: flex; animation: fi 0.22s; }
+@keyframes fi { from{opacity:0}to{opacity:1} }
+
+.dp-sheet {
+background: var(–white);
+border-radius: 20px 20px 0 0;
+border-top: 1px solid var(–border2);
+width: 100%; max-width: 430px;
+height: 78dvh;
+padding: 16px 20px 32px;
+position: relative;
+display: flex; flex-direction: column;
+animation: su 0.3s cubic-bezier(.25,1,.5,1);
+box-shadow: 0 -20px 60px rgba(30,28,24,0.15);
+overflow: hidden;
+}
+@keyframes su { from{transform:translateY(120px);opacity:0}to{transform:translateY(0);opacity:1} }
+
+.dp-handle { width: 36px; height: 3px; background: var(–cement); border-radius: 99px; margin: 0 auto 16px; flex-shrink: 0; }
+.dp-close {
+position: absolute; top: 14px; right: 18px;
+background: var(–bg2); border: none; width: 30px; height: 30px;
+border-radius: var(–r); color: var(–text2); font-size: 13px; cursor: pointer;
+display: flex; align-items: center; justify-content: center; transition: all 0.12s;
+}
+.dp-close:hover { background: var(–bg); color: var(–text); }
+
+.dp-date {
+font-family: var(–font-serif);
+font-size: 28px; font-weight: 400; color: var(–text);
+margin-bottom: 4px; letter-spacing: 0.3px; flex-shrink: 0;
+line-height: 1.2;
+}
+.dp-date em { font-style: normal; font-family: var(–font-sans); font-size: 13px; color: var(–text2); font-weight: 300; margin-left: 8px; }
+
+.dp-holiday-badge {
+display: inline-flex; align-items: center; gap: 5px;
+background: rgba(192,64,48,0.08); border: 1px solid rgba(192,64,48,0.2);
+color: #c04030; border-radius: 3px;
+padding: 3px 8px; font-size: 11px; font-weight: 600;
+margin-bottom: 16px; letter-spacing: 0.3px;
+flex-shrink: 0;
+}
+.dp-holiday-badge::before { content: ‘’; width: 5px; height: 5px; border-radius: 50%; background: #c04030; }
+
+.dp-divider { height: 1px; background: var(–border); margin-bottom: 14px; flex-shrink: 0; }
+
+/* event list */
+.dp-ev-list {
+display: flex; flex-direction: column; gap: 7px;
+margin-bottom: 14px;
+flex: 1; overflow-y: auto;
+}
+.dp-ev-item {
+display: flex; align-items: center; gap: 12px;
+padding: 13px 14px; border-radius: var(–r);
+background: var(–bg); border: 1px solid var(–border);
+border-left: 3px solid transparent;
+transition: all 0.12s; flex-shrink: 0;
+}
+.dp-ev-item:hover { border-color: var(–border2); transform: translateX(2px); }
+.dp-ev-bar { width: 3px; height: 36px; border-radius: 99px; flex-shrink: 0; }
+.dp-ev-info { flex: 1; }
+.dp-ev-title { font-size: 14px; font-weight: 500; color: var(–text); letter-spacing: -0.2px; }
+.dp-ev-time  { font-size: 11px; color: var(–text2); margin-top: 2px; font-weight: 300; }
+.dp-ev-del {
+background: none; border: none; color: var(–text3);
+font-size: 13px; cursor: pointer; padding: 4px 8px; border-radius: var(–r);
+transition: all 0.12s; line-height: 1;
+}
+.dp-ev-del:hover { background: #f5e8e5; color: #c04030; }
+.dp-no-ev {
+text-align: center; font-size: 13px; color: var(–text3);
+font-weight: 300; letter-spacing: 0.2px;
+padding: 32px 0; flex-shrink: 0;
+}
+
+/* add section */
+.dp-bottom { flex-shrink: 0; }
+.dp-add-btn {
+width: 100%; padding: 14px;
+border-radius: var(–r);
+border: 1px solid var(–border2);
+background: transparent; color: var(–text2);
+font-family: var(–font-sans); font-size: 13px; font-weight: 400;
+cursor: pointer; letter-spacing: 0.3px;
+transition: all 0.15s; display: flex; align-items: center; justify-content: center; gap: 8px;
+}
+.dp-add-btn:hover { background: var(–bg2); color: var(–text); }
+.dp-add-btn .plus { font-size: 20px; font-weight: 300; line-height: 1; color: var(–oak-d); }
+
+.dp-form { display: none; flex-direction: column; gap: 8px; margin-top: 10px; }
+.dp-form.on { display: flex; }
+
+.f-inp {
+width: 100%; padding: 11px 13px;
+background: var(–bg); border: 1px solid var(–border2);
+border-radius: var(–r); color: var(–text);
+font-family: var(–font-sans); font-size: 13px; font-weight: 400;
+outline: none; transition: border-color 0.14s;
+-webkit-appearance: none;
+}
+.f-inp:focus { border-color: var(–oak); }
+.f-inp::placeholder { color: var(–text3); font-weight: 300; }
+
+.f-row { display: flex; gap: 8px; }
+.f-row .f-inp { flex: 1; }
+
+/* color selector */
+.color-row { display: flex; gap: 7px; flex-wrap: wrap; }
+.color-chip {
+width: 26px; height: 26px; border-radius: 50%;
+border: 2px solid transparent; cursor: pointer;
+transition: transform 0.14s, border-color 0.14s;
+flex-shrink: 0;
+}
+.color-chip:hover { transform: scale(1.12); }
+.color-chip.selected { border-color: var(–text); transform: scale(1.15); }
+
+.f-save {
+padding: 12px; border-radius: var(–r); border: none;
+font-family: var(–font-sans); font-size: 13px; font-weight: 500;
+color: var(–white); cursor: pointer; letter-spacing: 0.2px;
+background: var(–oak-d);
+transition: opacity 0.14s, transform 0.12s;
+}
+.f-save:hover { opacity: 0.88; }
+.f-save:active { transform: scale(0.98); }
+
+/* ── CENTER MODALS ─────────────────── */
+.c-overlay {
+display: none; position: fixed; inset: 0;
+background: rgba(30,28,24,0.4);
+backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+z-index: 300; align-items: center; justify-content: center; padding: 24px;
+}
+.c-overlay.on { display: flex; animation: fi 0.18s; }
+
+.c-box {
+background: var(–white); border: 1px solid var(–border2);
+border-radius: 8px; width: 100%; max-width: 320px;
+padding: 28px 24px;
+animation: pi 0.22s cubic-bezier(.25,1,.5,1);
+box-shadow: var(–shadow-l);
+display: flex; flex-direction: column; gap: 12px;
+}
+@keyframes pi { from{transform:scale(0.92) translateY(10px);opacity:0}to{transform:scale(1);opacity:1} }
+
+.c-title {
+font-family: var(–font-serif);
+font-size: 22px; font-weight: 400; text-align: center;
+color: var(–text); letter-spacing: 0.5px;
+}
+.c-sub { font-size: 12px; color: var(–text2); text-align: center; line-height: 1.7; font-weight: 300; }
+.c-label { font-size: 10px; font-weight: 500; color: var(–text3); letter-spacing: 0.8px; }
+.c-row { display: flex; align-items: center; gap: 10px; }
+.c-avatar {
+width: 34px; height: 34px; border-radius: var(–r);
+display: flex; align-items: center; justify-content: center;
+font-size: 14px; flex-shrink: 0; font-weight: 500; color: white;
+}
+.c-avatar.her { background: var(–her); }
+.c-avatar.his { background: var(–his); }
+
+/* invite */
+.invite-code-wrap {
+background: var(–bg2); border: 1px solid var(–border2);
+border-radius: var(–r); padding: 18px;
+text-align: center;
+}
+.invite-code {
+font-family: var(–font-serif);
+font-size: 34px; font-weight: 300; letter-spacing: 10px; color: var(–oak-d);
+}
+.invite-hint { font-size: 11px; color: var(–text3); text-align: center; line-height: 1.7; font-weight: 300; }
+
+/* buttons */
+.btn {
+width: 100%; padding: 12px; border-radius: var(–r); border: none;
+font-family: var(–font-sans); font-size: 13px; font-weight: 500;
+cursor: pointer; letter-spacing: 0.2px; transition: opacity 0.14s, transform 0.12s;
+}
+.btn:hover { opacity: 0.88; } .btn:active { transform: scale(0.99); }
+.btn-oak { background: var(–oak-d); color: white; }
+.btn-kakao { background: #FEE500; color: #3A1D1D; display: flex; align-items: center; justify-content: center; gap: 8px; }
+.btn-ghost {
+background: transparent; color: var(–text2);
+border: 1px solid var(–border2); font-weight: 400;
+}
+.btn-ghost:hover { background: var(–bg2); color: var(–text); }
+
+/* ── TOAST ────────────────────────── */
+.toast {
+position: fixed; bottom: 86px; left: 50%; transform: translateX(-50%);
+background: var(–text); color: var(–bg);
+padding: 9px 18px; border-radius: 2px;
+font-size: 12px; font-weight: 400; letter-spacing: 0.2px;
+z-index: 999; white-space: nowrap; pointer-events: none;
+opacity: 0; transition: opacity 0.2s;
+box-shadow: var(–shadow-m);
+}
+.toast.on { opacity: 1; }
+
+/* holiday styles */
+.ev-holiday {
+background: rgba(176,96,80,0.12);
+color: #b06050;
+font-weight: 600;
+}
+.m-cell.sun .ev-holiday,
+.m-cell.sat .ev-holiday { opacity: 0.85; }
+.week-holiday-item { background: rgba(176,96,80,0.07) !important; }
+
+/* oak accent line under topbar */
+.oak-line { height: 1px; background: linear-gradient(to right, transparent, var(–oak-l), transparent); }
+
+/* color palette definitions */
+.f-inp, input, textarea { user-select: text; -webkit-user-select: text; }
+.c-terr     { background: #b87860; }
+.c-sage     { background: #7a9e8a; }
+.c-stone    { background: #a0978a; }
+.c-sand     { background: #c8b890; }
+.c-slate    { background: #8090a0; }
+.c-clay     { background: #c09878; }
+.c-moss     { background: #789070; }
+
+/* pill in monthly — 더 선명하고 구분 가능한 색상 */
+.p-oak  { background: #f0d4a8; color: #6b4010; }  /* 골든 오크 */
+.p-terr { background: #f0b8a0; color: #7a2810; }  /* 테라코타 */
+.p-sage { background: #a8d4b8; color: #1a5030; }  /* 세이지 그린 */
+.p-stone{ background: #d0ccc4; color: #3a3530; }  /* 스톤 그레이 */
+.p-sand { background: #e8d89c; color: #5a4808; }  /* 샌드 옐로우 */
+.p-slate{ background: #a8c0d8; color: #1a3050; }  /* 슬레이트 블루 */
+.p-clay { background: #e8c0a0; color: #5a2a10; }  /* 클레이 */
+.p-moss { background: #b0d0a0; color: #1a4010; }  /* 모스 그린 */
+</style>
+
+</head>
+<body>
+
+<!-- Settings Modal -->
+
+<div class="c-overlay" id="settingsMo">
+  <div class="c-box">
+    <div class="c-title">이름 설정</div>
+    <div class="c-sub">두 분의 이름을 자유롭게 설정하세요</div>
+    <div class="c-label">PARTNER 1</div>
+    <div class="c-row">
+      <div class="c-avatar her" id="herInitial">여</div>
+      <input class="f-inp" id="herNI" style="margin:0" placeholder="이름 입력">
+    </div>
+    <div class="c-label">PARTNER 2</div>
+    <div class="c-row">
+      <div class="c-avatar his" id="hisInitial">남</div>
+      <input class="f-inp" id="hisNI" style="margin:0" placeholder="이름 입력">
+    </div>
+    <button class="btn btn-oak" onclick="saveSettings()">저장</button>
+    <button class="btn btn-ghost" onclick="closeModal('settingsMo')">닫기</button>
+  </div>
+</div>
+
+<!-- Invite Modal -->
+
+<div class="c-overlay" id="inviteMo">
+  <div class="c-box">
+    <div class="c-title">초대</div>
+    <div class="c-sub">아래 코드를 상대방에게 공유하세요<br>같은 캘린더에서 함께 사용할 수 있어요</div>
+    <div class="invite-code-wrap">
+      <div class="invite-code" id="inviteCode">——</div>
+    </div>
+    <div class="invite-hint">상대방이 앱에서 이 코드를 입력하면 접속돼요</div>
+    <button class="btn btn-kakao" onclick="shareKakao()">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="#3A1D1D"><path d="M12 3C6.477 3 2 6.477 2 10.8c0 2.7 1.6 5.07 4.03 6.48L5.2 21l4.35-2.88C10.28 18.35 11.13 18.45 12 18.45c5.523 0 10-3.477 10-7.65S17.523 3 12 3z"/></svg>
+      카카오톡으로 초대
+    </button>
+    <button class="btn btn-ghost" onclick="copyInvite()">링크 복사</button>
+    <button class="btn btn-ghost" onclick="closeModal('inviteMo')">닫기</button>
+  </div>
+</div>
+
+<!-- Day Detail Panel -->
+
+<div class="day-panel" id="dayPanel">
+  <div class="dp-sheet">
+    <div class="dp-handle"></div>
+    <button class="dp-close" onclick="closePanel()">✕</button>
+    <div class="dp-date" id="dpDate"></div>
+    <div class="dp-holiday-badge" id="dpHolidayBadge" style="display:none"></div>
+    <div class="dp-divider"></div>
+    <div class="dp-ev-list" id="dpEvList"></div>
+    <div class="dp-bottom">
+      <button class="dp-add-btn" id="dpAddBtn" onclick="toggleAddForm()">
+        <span class="plus">+</span> 일정 추가
+      </button>
+      <div class="dp-form" id="dpForm">
+        <input class="f-inp" type="text" id="newTitle" placeholder="일정 이름">
+        <div class="f-row">
+          <input class="f-inp" type="time" id="newTime">
+        </div>
+        <div class="color-row" id="colorRow"></div>
+        <button class="f-save" onclick="saveEv()">저장</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<!-- ── TOPBAR ── -->
+
+<div class="topbar">
+  <div class="logo">우리 캘린더<span></span></div>
+  <div class="top-right">
+    <button class="icon-btn" onclick="openInvite()" title="초대">
+      <svg viewBox="0 0 24 24" stroke="#7a7368" fill="none" stroke-width="1.5" stroke-linecap="round"><path d="M4 4h16v12H4z"/><path d="M4 4l8 8 8-8"/></svg>
+    </button>
+    <button class="icon-btn" onclick="openSettings()" title="설정">
+      <svg viewBox="0 0 24 24" stroke="#7a7368" fill="none" stroke-width="1.5" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+    </button>
+  </div>
+</div>
+<div class="oak-line"></div>
+
+<!-- ── PARTNER TABS ── -->
+
+<div class="partner-strip">
+  <button class="p-tab her on" id="herTab" onclick="setUser('her')">
+    <span id="herTabName">여자친구</span>
+  </button>
+  <button class="p-tab his" id="hisTab" onclick="setUser('his')">
+    <span id="hisTabName">남자친구</span>
+  </button>
+</div>
+
+<!-- ── CAL NAV ── -->
+
+<div class="cal-nav">
+  <div class="cal-nav-left">
+    <div class="cal-period" id="calPeriod"></div>
+    <div class="cal-sub" id="calSub"></div>
+  </div>
+  <div class="cal-nav-right">
+    <div class="view-toggle">
+      <button class="vt-btn on" id="btnMonthly" onclick="setView('monthly')">월간</button>
+      <button class="vt-btn"    id="btnWeekly"  onclick="setView('weekly')">주간</button>
+    </div>
+    <div class="nav-arrows">
+      <button class="arrow-btn" onclick="movePeriod(-1)">‹</button>
+      <button class="arrow-btn" onclick="movePeriod(1)">›</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── DOW ROW (monthly only) ── -->
+
+<div class="dow-row" id="dowRow">
+  <div class="s">SUN</div><div>MON</div><div>TUE</div>
+  <div>WED</div><div>THU</div><div>FRI</div><div class="sa">SAT</div>
+</div>
+
+<!-- ── MONTHLY GRID ── -->
+
+<div class="monthly-wrap" id="monthlyWrap">
+  <div class="monthly-slider" id="monthlySlider">
+    <div class="monthly-panel" id="panelPrev"></div>
+    <div class="monthly-panel" id="panelCur"></div>
+    <div class="monthly-panel" id="panelNext"></div>
+  </div>
+</div>
+
+<!-- ── WEEKLY WRAP ── -->
+
+<div class="weekly-wrap" id="weeklyWrap">
+  <div class="weekly-inner" id="weeklyInner">
+    <div class="week-header" id="weekHeader"></div>
+    <div class="week-body" id="weekBody"></div>
+  </div>
+</div>
+
+<script>
+/* ── CONSTANTS & STATE ─────────────── */
+const NOW   = new Date()
+const DOWK  = ['SUN','MON','TUE','WED','THU','FRI','SAT']
+const DOWKO = ['일','월','화','수','목','금','토']
+const MONK  = ['January','February','March','April','May','June','July','August','September','October','November','December']
+const MONKO = ['1월','2월','3월','4월','5월','6월','7월','8월','9월','10월','11월','12월']
+const pad   = n => String(n).padStart(2,'0')
+const dk    = (y,m,d) => `${y}-${pad(m+1)}-${pad(d)}`
+
+const COLORS = [
+  { id:'c-oak',   hex:'#c4843a', pill:'p-oak'  },  // 골든 오크
+  { id:'c-terr',  hex:'#c05840', pill:'p-terr' },  // 테라코타
+  { id:'c-sage',  hex:'#4a9870', pill:'p-sage' },  // 세이지 그린
+  { id:'c-stone', hex:'#8a8880', pill:'p-stone'},  // 스톤
+  { id:'c-sand',  hex:'#c0a030', pill:'p-sand' },  // 샌드 옐로우
+  { id:'c-slate', hex:'#5078a0', pill:'p-slate'},  // 슬레이트 블루
+  { id:'c-clay',  hex:'#b07050', pill:'p-clay' },  // 클레이
+  { id:'c-moss',  hex:'#5a8850', pill:'p-moss' },  // 모스 그린
+]
+const colorHex  = id => (COLORS.find(c=>c.id===id)||COLORS[0]).hex
+const colorPill = id => (COLORS.find(c=>c.id===id)||COLORS[0]).pill
+
+let curY = NOW.getFullYear(), curM = NOW.getMonth()
+let curWeekStart = getWeekStart(NOW)
+let view    = 'monthly'   // 'monthly' | 'weekly'
+let user    = 'her'
+let selDate = null
+let selColor = 'c-oak'
+let showAddForm = false
+
+const NK='uc2_n', EK='uc2_e', RK='uc2_r'
+let names   = { her:'여자친구', his:'남자친구' }
+let evs     = { her:{}, his:{} }
+let roomId  = null
+
+/* ── UTILS ─────────────────────────── */
+function getWeekStart(d) {
+  const s = new Date(d); s.setHours(0,0,0,0)
+  s.setDate(s.getDate() - s.getDay()); return s
+}
+function addDays(d, n) { const r=new Date(d); r.setDate(r.getDate()+n); return r }
+function sameDay(a,b) { return a.getFullYear()===b.getFullYear()&&a.getMonth()===b.getMonth()&&a.getDate()===b.getDate() }
+function dateFromKey(k) { const [y,m,d]=k.split('-').map(Number); return new Date(y,m-1,d) }
+
+/* ── STORAGE ───────────────────────── */
+function load() {
+  try { const n=localStorage.getItem(NK); if(n) names=JSON.parse(n) } catch(_){}
+  try { const e=localStorage.getItem(EK); if(e) evs=JSON.parse(e) } catch(_){}
+  try { const r=localStorage.getItem(RK); if(r) roomId=r } catch(_){}
+  if (!roomId) { roomId=Math.random().toString(36).slice(2,8).toUpperCase(); localStorage.setItem(RK,roomId) }
+  if (!Object.keys(evs.her).length && !Object.keys(evs.his).length) seed()
+}
+function persist() {
+  localStorage.setItem(NK,JSON.stringify(names))
+  localStorage.setItem(EK,JSON.stringify(evs))
+}
+function addSeed(who,y,m,d,title,cid) {
+  const k=dk(y,m-1,d); if(!evs[who][k])evs[who][k]=[]
+  evs[who][k].push({id:Math.random().toString(36).slice(2),title,color:cid,time:null})
+}
+function seed() {
+  addSeed('her',2026,5,1,'청모','c-terr')
+  addSeed('her',2026,5,2,'가족여행','c-sage'); addSeed('her',2026,5,2,'숙직','c-sand')
+  addSeed('her',2026,5,3,'가족여행','c-sage')
+  addSeed('her',2026,5,9,'ZFN 경기','c-slate')
+  addSeed('her',2026,5,16,'양산 마라톤','c-terr')
+  addSeed('her',2026,5,23,'차박','c-moss'); addSeed('her',2026,5,24,'차박','c-moss')
+  addSeed('her',2026,5,30,'거제 트레일','c-clay')
+  addSeed('his',2026,5,1,'당직','c-sand'); addSeed('his',2026,5,2,'숙직','c-sand')
+  addSeed('his',2026,5,6,'휴무','c-stone'); addSeed('his',2026,5,6,'한의원','c-sage')
+  addSeed('his',2026,5,7,'당직','c-sand'); addSeed('his',2026,5,7,'동기 청모','c-terr')
+  addSeed('his',2026,5,8,'휴무','c-stone')
+  addSeed('his',2026,5,10,'결혼식','c-oak')
+  addSeed('his',2026,5,12,'당직','c-sand'); addSeed('his',2026,5,13,'휴무','c-stone')
+  addSeed('his',2026,5,16,'야유회','c-slate')
+  addSeed('his',2026,5,18,'당직','c-sand')
+  addSeed('his',2026,5,19,'휴무','c-stone'); addSeed('his',2026,5,20,'휴무','c-stone')
+  addSeed('his',2026,5,24,'숙직','c-sand'); addSeed('his',2026,5,27,'휴무','c-stone')
+  addSeed('his',2026,5,29,'당직','c-sand')
+  persist()
+}
+
+/* ── 공휴일 데이터 (2025~2027) ──────── */
+// 출처: 인사혁신처 고시 / kholidayz.com
+const HOLIDAYS = {
+  // 2025
+  '2025-01-01':'신정',
+  '2025-01-28':'설날 연휴',
+  '2025-01-29':'설날',
+  '2025-01-30':'설날 연휴',
+  '2025-03-01':'삼일절',
+  '2025-03-03':'대체공휴일',
+  '2025-05-01':'노동절',
+  '2025-05-05':'어린이날',
+  '2025-05-06':'부처님오신날',
+  '2025-06-06':'현충일',
+  '2025-08-15':'광복절',
+  '2025-10-03':'개천절',
+  '2025-10-05':'추석 연휴',
+  '2025-10-06':'추석',
+  '2025-10-07':'추석 연휴',
+  '2025-10-08':'대체공휴일',
+  '2025-10-09':'한글날',
+  '2025-12-25':'크리스마스',
+  // 2026
+  '2026-01-01':'신정',
+  '2026-02-15':'설날 연휴',
+  '2026-02-16':'설날',
+  '2026-02-17':'설날 연휴',
+  '2026-03-01':'삼일절',
+  '2026-03-02':'대체공휴일',
+  '2026-05-01':'노동절',
+  '2026-05-05':'어린이날',
+  '2026-05-24':'부처님오신날',
+  '2026-05-25':'대체공휴일',
+  '2026-06-06':'현충일',
+  '2026-08-15':'광복절',
+  '2026-08-17':'대체공휴일',
+  '2026-09-24':'추석 연휴',
+  '2026-09-25':'추석',
+  '2026-09-26':'추석 연휴',
+  '2026-10-03':'개천절',
+  '2026-10-05':'대체공휴일',
+  '2026-10-09':'한글날',
+  '2026-12-25':'크리스마스',
+  // 2027
+  '2027-01-01':'신정',
+  '2027-02-06':'설날 연휴',
+  '2027-02-07':'설날',
+  '2027-02-08':'설날 연휴',
+  '2027-02-09':'대체공휴일',
+  '2027-03-01':'삼일절',
+  '2027-05-01':'노동절',
+  '2027-05-05':'어린이날',
+  '2027-05-13':'부처님오신날',
+  '2027-06-06':'현충일',
+  '2027-08-15':'광복절',
+  '2027-08-16':'대체공휴일',
+  '2027-09-14':'추석 연휴',
+  '2027-09-15':'추석',
+  '2027-09-16':'추석 연휴',
+  '2027-10-03':'개천절',
+  '2027-10-04':'대체공휴일',
+  '2027-10-09':'한글날',
+  '2027-10-11':'대체공휴일',
+  '2027-12-25':'크리스마스',
+  '2027-12-27':'대체공휴일',
+}
+
+/* ── USER SWITCH ───────────────────── */
+function setUser(u) {
+  user=u
+  document.getElementById('herTab').classList.toggle('on',u==='her')
+  document.getElementById('hisTab').classList.toggle('on',u==='his')
+  render()
+}
+
+/* ── VIEW SWITCH ───────────────────── */
+function setView(v) {
+  view=v
+  document.getElementById('btnMonthly').classList.toggle('on',v==='monthly')
+  document.getElementById('btnWeekly').classList.toggle('on',v==='weekly')
+  document.getElementById('monthlyWrap').classList.toggle('off',v!=='monthly')
+  document.getElementById('weeklyWrap').classList.toggle('on',v==='weekly')
+  document.getElementById('dowRow').style.display = v==='monthly'?'':'none'
+  render()
+}
+
+/* ── PERIOD NAV ────────────────────── */
+let slideDir = null
+let isSliding = false
+
+function movePeriod(d) {
+  if (view !== 'monthly') {
+    // 주간은 기존 방식 유지
+    slideDir = d > 0 ? 'left' : 'right'
+    curWeekStart = addDays(curWeekStart, d*7)
+    renderWeekly()
+    return
+  }
+  if (isSliding) return
+  isSliding = true
+
+  const slider = document.getElementById('monthlySlider')
+  // 슬라이드: 오른쪽(다음달) = -66.666%, 왼쪽(이전달) = 0%
+  const targetX = d > 0 ? '-66.666%' : '0%'
+  slider.style.transform = `translateX(${targetX})`
+
+  slider.addEventListener('transitionend', ()=>{
+    // 달 업데이트
+    curM += d
+    if(curM>11){curM=0;curY++} if(curM<0){curM=11;curY--}
+    // 헤더 업데이트
+    document.getElementById('calPeriod').innerHTML = `${curY} <em>${MONKO[curM]}</em>`
+    document.getElementById('calSub').textContent   = MONK[curM].toUpperCase() + ' ' + curY
+    // 3패널 리셋 (transition 없이)
+    renderMonthly()
+    isSliding = false
+  }, { once: true })
+}
+
+/* ── RENDER ────────────────────────── */
+function render() {
+  if (view==='monthly') renderMonthly(); else renderWeekly()
+}
+
+// 셀 목록 생성 (y, m 기준)
+function buildCells(y, m) {
+  const firstDow = new Date(y,m,1).getDay()
+  const daysThis = new Date(y,m+1,0).getDate()
+  const prevM=m===0?11:m-1, prevY=m===0?y-1:y
+  const daysPrev=new Date(prevY,prevM+1,0).getDate()
+  const nextM=m===11?0:m+1, nextY=m===11?y+1:y
+
+  const cells=[]
+  for(let i=0;i<firstDow;i++) cells.push({y:prevY,m:prevM,d:daysPrev-firstDow+1+i,dim:true})
+  for(let d=1;d<=daysThis;d++) cells.push({y,m,d,dim:false})
+  let nd=1; while(cells.length%7!==0) cells.push({y:nextY,m:nextM,d:nd++,dim:true})
+  return cells
+}
+
+// 패널 하나 채우기
+function fillPanel(panelEl, y, m, userEvs) {
+  const grid = document.createElement('div')
+  grid.className = 'monthly-grid'
+
+  buildCells(y, m).forEach(c=>{
+    const key=dk(c.y,c.m,c.d)
+    const dow=new Date(c.y,c.m,c.d).getDay()
+    const isToday=sameDay(new Date(c.y,c.m,c.d),NOW)
+    const arr=userEvs[key]||[]
+    const isHoliday=!!HOLIDAYS[key]&&!c.dim
+
+    const cell=document.createElement('div')
+    cell.className=['m-cell',c.dim?'dim':'',isToday?'today':'',dow===0?'sun':'',dow===6?'sat':'',isHoliday?'holiday':''].filter(Boolean).join(' ')
+    cell.addEventListener('click',()=>{ if(!c.dim) openDay(key,c.y,c.m,c.d,dow) })
+
+    const dn=document.createElement('div'); dn.className='m-dnum'; dn.textContent=c.d
+    cell.appendChild(dn)
+
+    const hName=HOLIDAYS[key]
+    if(hName&&!c.dim){
+      const hBar=document.createElement('div'); hBar.className='ev-bar ev-holiday'
+      hBar.textContent=hName; cell.appendChild(hBar)
+    }
+    arr.slice(0,2).forEach(ev=>{
+      const bar=document.createElement('div'); bar.className='ev-bar '+colorPill(ev.color)
+      bar.textContent=ev.title; cell.appendChild(bar)
+    })
+    if(arr.length>2){ const more=document.createElement('div'); more.className='ev-dot-more'; more.textContent=`+${arr.length-2}`; cell.appendChild(more) }
+    grid.appendChild(cell)
+  })
+
+  panelEl.innerHTML=''
+  panelEl.appendChild(grid)
+}
+
+// 인접 달 계산
+function adjMonth(y, m, delta) {
+  let nm=m+delta, ny=y
+  if(nm>11){nm=0;ny++} if(nm<0){nm=11;ny--}
+  return {y:ny,m:nm}
+}
+
+/* ── MONTHLY RENDER (3-panel) ──────── */
+function renderMonthly(animate) {
+  document.getElementById('calPeriod').innerHTML = `${curY} <em>${MONKO[curM]}</em>`
+  document.getElementById('calSub').textContent   = MONK[curM].toUpperCase() + ' ' + curY
+
+  const userEvs = evs[user]||{}
+  const prev = adjMonth(curY,curM,-1)
+  const next = adjMonth(curY,curM, 1)
+
+  const slider   = document.getElementById('monthlySlider')
+  const panelPrev= document.getElementById('panelPrev')
+  const panelCur = document.getElementById('panelCur')
+  const panelNext= document.getElementById('panelNext')
+
+  fillPanel(panelPrev, prev.y, prev.m, userEvs)
+  fillPanel(panelCur,  curY,  curM,   userEvs)
+  fillPanel(panelNext, next.y, next.m, userEvs)
+
+  // 슬라이더를 중앙(현재달) 패널로 즉시 이동 (transition 없이)
+  slider.classList.add('no-transition')
+  slider.style.transform = 'translateX(-33.333%)'
+  // 강제 reflow
+  slider.offsetHeight
+  slider.classList.remove('no-transition')
+
+  // monthly-wrap 높이를 현재 패널 높이에 맞춤
+  requestAnimationFrame(()=>{
+    const h = panelCur.offsetHeight
+    if (h > 0) document.getElementById('monthlyWrap').style.minHeight = h + 'px'
+  })
+}
+
+function animateSlide(el) {
+  if (!slideDir) return          // 초기 렌더는 애니메이션 없음
+  const dir = slideDir === 'left' ? 1 : -1
+
+  // transition 일시 비활성화 → 시작 위치로 순간 이동
+  el.style.transition = 'none'
+  el.style.opacity    = '0'
+  el.style.transform  = `translateX(${dir * 28}px)`
+
+  // 다음 프레임: transition 켜고 자연스럽게 제자리로
+  requestAnimationFrame(()=>{
+    requestAnimationFrame(()=>{
+      el.style.transition = 'opacity 0.26s ease, transform 0.30s cubic-bezier(.25,.8,.25,1)'
+      el.style.opacity    = '1'
+      el.style.transform  = 'translateX(0)'
+    })
+  })
+}
+
+/* ── WEEKLY RENDER ─────────────────── */
+function renderWeekly() {
+  const inner = document.getElementById('weeklyInner')
+  const days = Array.from({length:7},(_,i)=>addDays(curWeekStart,i))
+  const s=days[0], e=days[6]
+
+  // header label
+  if (s.getMonth()===e.getMonth()) {
+    document.getElementById('calPeriod').innerHTML=`${s.getFullYear()} <em>${MONKO[s.getMonth()]}</em>`
+    document.getElementById('calSub').textContent=`${s.getDate()} — ${e.getDate()} ${MONK[s.getMonth()].slice(0,3).toUpperCase()}`
+  } else {
+    document.getElementById('calPeriod').innerHTML=`${MONKO[s.getMonth()]} <em>— ${MONKO[e.getMonth()]}</em>`
+    document.getElementById('calSub').textContent=`${s.getDate()} ${MONK[s.getMonth()].slice(0,3).toUpperCase()} — ${e.getDate()} ${MONK[e.getMonth()].slice(0,3).toUpperCase()}`
+  }
+
+  // week header
+  const wh=document.getElementById('weekHeader'); wh.innerHTML=''
+  const emptyEl=document.createElement('div'); emptyEl.className='week-header-empty'; wh.appendChild(emptyEl)
+  days.forEach((d,i)=>{
+    const col=document.createElement('div')
+    const isToday=sameDay(d,NOW)
+    const wKey=dk(d.getFullYear(),d.getMonth(),d.getDate())
+    const isHol=!!HOLIDAYS[wKey]
+    col.className=['week-day-col',isToday?'today-col':''].filter(Boolean).join(' ')
+    const dow=d.getDay()
+    const dowColor = dow===0||isHol ? 's' : dow===6 ? 'sa' : ''
+    const numColor = dow===0||isHol ? 'color:#c04030;font-weight:600' : dow===6 ? 'color:#3a68a0;font-weight:500' : 'color:#1e1c18;font-weight:400'
+    col.innerHTML=`<div class="wdc-dow ${dowColor}">${DOWK[dow].slice(0,2)}</div><div class="wdc-d" style="${numColor}">${d.getDate()}</div>`
+    col.addEventListener('click',()=>openDay(wKey,d.getFullYear(),d.getMonth(),d.getDate(),dow))
+    wh.appendChild(col)
+  })
+
+  // week body — one row per day
+  const wb=document.getElementById('weekBody'); wb.innerHTML=''
+  const userEvs=evs[user]||{}
+  days.forEach((d,i)=>{
+    const key=dk(d.getFullYear(),d.getMonth(),d.getDate())
+    const arr=userEvs[key]||[]
+    const isToday=sameDay(d,NOW), isSel=selDate===key, dow=d.getDay()
+
+    const row=document.createElement('div'); row.className='week-day-row'
+
+    // time label col
+    const tl=document.createElement('div'); tl.className='week-time-label'
+    tl.textContent=`${DOWKO[dow]}`
+    if (dow===0 || HOLIDAYS[key]) tl.style.color='#c04030'
+    else if (dow===6) tl.style.color='#3a68a0'
+    row.appendChild(tl)
+
+    // events col
+    const ea=document.createElement('div')
+    ea.className=['week-ev-area',isToday?'has-today':''].filter(Boolean).join(' ')
+    ea.addEventListener('click',()=>openDay(key,d.getFullYear(),d.getMonth(),d.getDate(),dow))
+
+    if (!arr.length && !HOLIDAYS[key]) {
+      const ne=document.createElement('div'); ne.className='week-no-ev'
+      ne.textContent='일정 없음'; ea.appendChild(ne)
+    } else {
+      // 공휴일 먼저
+      if (HOLIDAYS[key]) {
+        const hItem=document.createElement('div'); hItem.className='week-ev-item week-holiday-item'
+        hItem.innerHTML=`<div class="week-ev-dot" style="background:#b06050"></div><div style="font-size:12px;font-weight:500;color:#b06050">${HOLIDAYS[key]}</div>`
+        ea.appendChild(hItem)
+      }
+      arr.forEach(ev=>{
+        const item=document.createElement('div'); item.className='week-ev-item'
+        item.style.borderLeftColor=colorHex(ev.color)
+        item.innerHTML=`
+          <div class="week-ev-dot" style="background:${colorHex(ev.color)}"></div>
+          ${ev.time?`<div class="week-ev-time">${ev.time}</div>`:''}
+          <div style="font-size:13px;font-weight:400;letter-spacing:-0.2px">${ev.title}</div>`
+        ea.appendChild(item)
+      })
+    }
+    row.appendChild(ea); wb.appendChild(row)
+  })
+
+  // 주간 뷰 간단한 페이드
+  inner.style.transition='none'; inner.style.opacity='0'
+  requestAnimationFrame(()=>requestAnimationFrame(()=>{
+    inner.style.transition='opacity 0.22s ease'
+    inner.style.opacity='1'
+  }))
+}
+
+/* ── DAY PANEL ─────────────────────── */
+function openDay(key,y,m,d,dow) {
+  selDate=key
+
+  document.getElementById('dpDate').innerHTML=
+    `${y}년 ${m+1}월 ${d}일 <em>${DOWKO[dow]}요일</em>`
+
+  // 공휴일 배지 표시
+  const badge = document.getElementById('dpHolidayBadge')
+  const hName = HOLIDAYS[key]
+  if (hName) {
+    badge.textContent = hName
+    badge.style.display = 'inline-flex'
+  } else {
+    badge.style.display = 'none'
+  }
+
+  renderDpList()
+  document.getElementById('dpForm').classList.remove('on')
+  document.getElementById('dpAddBtn').style.display=''
+  showAddForm=false
+  document.getElementById('newTitle').value=''
+  document.getElementById('newTime').value=''
+  selColor='c-oak'
+  renderColorPicker()
+
+  document.getElementById('dayPanel').classList.add('on')
+}
+function closePanel() {
+  document.getElementById('dayPanel').classList.remove('on')
+  selDate=null
+}
+document.getElementById('dayPanel').addEventListener('click',e=>{
+  if(e.target===e.currentTarget) closePanel()
+})
+
+function renderDpList() {
+  const list=document.getElementById('dpEvList'); list.innerHTML=''
+  const arr=(evs[user]||{})[selDate]||[]
+  const hName=HOLIDAYS[selDate]
+
+  // 공휴일 항목 자동 표시
+  if (hName) {
+    const hItem=document.createElement('div'); hItem.className='dp-ev-item'
+    hItem.style.borderLeftColor='#c04030'
+    hItem.style.background='rgba(192,64,48,0.04)'
+    hItem.innerHTML=`
+      <div class="dp-ev-bar" style="background:#c04030"></div>
+      <div class="dp-ev-info">
+        <div class="dp-ev-title" style="color:#c04030">${hName}</div>
+        <div class="dp-ev-time">공휴일</div>
+      </div>`
+    list.appendChild(hItem)
+  }
+
+  if (!arr.length && !hName) {
+    list.innerHTML='<div class="dp-no-ev">등록된 일정이 없습니다</div>'; return
+  }
+  arr.forEach((ev,i)=>{
+    const item=document.createElement('div'); item.className='dp-ev-item'
+    item.style.borderLeftColor=colorHex(ev.color)
+    item.innerHTML=`
+      <div class="dp-ev-bar" style="background:${colorHex(ev.color)}"></div>
+      <div class="dp-ev-info">
+        <div class="dp-ev-title">${ev.title}</div>
+        ${ev.time?`<div class="dp-ev-time">${ev.time}</div>`:''}
+      </div>
+      <button class="dp-ev-del" onclick="delEv(${i})">✕</button>`
+    list.appendChild(item)
+  })
+}
+function delEv(i) {
+  if(!evs[user][selDate])return
+  evs[user][selDate].splice(i,1)
+  if(!evs[user][selDate].length) delete evs[user][selDate]
+  persist(); render(); renderDpList()
+}
+
+/* ── ADD FORM ──────────────────────── */
+function toggleAddForm() {
+  showAddForm=!showAddForm
+  document.getElementById('dpForm').classList.toggle('on',showAddForm)
+  document.getElementById('dpAddBtn').style.display = showAddForm ? 'none' : ''
+  if (showAddForm) setTimeout(()=>document.getElementById('newTitle').focus(),60)
+}
+
+function renderColorPicker() {
+  const row=document.getElementById('colorRow'); row.innerHTML=''
+  COLORS.forEach(c=>{
+    const chip=document.createElement('div')
+    chip.className='color-chip'+(c.id===selColor?' selected':'')
+    chip.style.background=c.hex
+    chip.addEventListener('click',()=>{
+      selColor=c.id
+      document.querySelectorAll('.color-chip').forEach(el=>el.classList.remove('selected'))
+      chip.classList.add('selected')
+    })
+    row.appendChild(chip)
+  })
+}
+
+function saveEv() {
+  const title=document.getElementById('newTitle').value.trim()
+  if(!title){showToast('일정 이름을 입력해주세요');return}
+  const time=document.getElementById('newTime').value
+  if(!evs[user][selDate])evs[user][selDate]=[]
+  evs[user][selDate].push({id:Math.random().toString(36).slice(2),title,time:time||null,color:selColor})
+  persist(); render(); renderDpList()
+  document.getElementById('newTitle').value=''
+  document.getElementById('newTime').value=''
+  showAddForm=false
+  document.getElementById('dpForm').classList.remove('on')
+  document.getElementById('dpAddBtn').style.display=''
+}
+
+/* ── FAB ────────────────────────────── */
+function openToday() {
+  const y=NOW.getFullYear(),m=NOW.getMonth(),d=NOW.getDate()
+  if(view==='monthly'){curY=y;curM=m} else {curWeekStart=getWeekStart(NOW)}
+  render()
+  openDay(dk(y,m,d),y,m,d,NOW.getDay())
+}
+
+/* ── SETTINGS ──────────────────────── */
+function openSettings() {
+  document.getElementById('herNI').value=names.her
+  document.getElementById('hisNI').value=names.his
+  updateInitials()
+  document.getElementById('settingsMo').classList.add('on')
+}
+function updateInitials() {
+  const herV=document.getElementById('herNI').value||names.her
+  const hisV=document.getElementById('hisNI').value||names.his
+  document.getElementById('herInitial').textContent=herV.slice(0,1)||'여'
+  document.getElementById('hisInitial').textContent=hisV.slice(0,1)||'남'
+}
+document.getElementById('herNI').addEventListener('input',updateInitials)
+document.getElementById('hisNI').addEventListener('input',updateInitials)
+
+function saveSettings() {
+  names.her=document.getElementById('herNI').value.trim()||'여자친구'
+  names.his=document.getElementById('hisNI').value.trim()||'남자친구'
+  persist()
+  document.getElementById('herTabName').textContent=names.her
+  document.getElementById('hisTabName').textContent=names.his
+  closeModal('settingsMo')
+  showToast('저장되었습니다')
+}
+
+/* ── INVITE ────────────────────────── */
+function openInvite() {
+  document.getElementById('inviteCode').textContent=roomId
+  document.getElementById('inviteMo').classList.add('on')
+}
+function buildInviteText() {
+  const url=window.location.href
+  return `우리 캘린더 초대\n\n초대 코드: ${roomId}\n링크: ${url}?room=${roomId}`
+}
+function shareKakao() {
+  window.location.href=`kakaotalk://send?text=${encodeURIComponent(buildInviteText())}`
+  setTimeout(()=>{if(navigator.share)navigator.share({title:'우리 캘린더',text:buildInviteText()}).catch(()=>copyInvite());else copyInvite()},700)
+}
+function copyInvite() {
+  const t=buildInviteText()
+  navigator.clipboard?.writeText(t).then(()=>showToast('링크가 복사되었습니다'))
+    .catch(()=>{const ta=document.createElement('textarea');ta.value=t;ta.style='position:fixed;opacity:0';document.body.appendChild(ta);ta.select();document.execCommand('copy');document.body.removeChild(ta);showToast('복사되었습니다')})
+}
+
+/* ── MODAL UTIL ─────────────────────── */
+function closeModal(id) { document.getElementById(id).classList.remove('on') }
+document.querySelectorAll('.c-overlay').forEach(el=>{
+  el.addEventListener('click',e=>{if(e.target===el)el.classList.remove('on')})
+})
+
+/* ── TOAST ──────────────────────────── */
+let _tt
+function showToast(msg) {
+  const el=document.getElementById('toast'); el.textContent=msg; el.classList.add('on')
+  if(_tt)clearTimeout(_tt); _tt=setTimeout(()=>el.classList.remove('on'),2800)
+}
+
+/* ── SWIPE GESTURE ───────────────────── */
+;(()=>{
+  const targets = [
+    document.getElementById('monthlyWrap'),
+    document.getElementById('weeklyWrap'),
+  ]
+
+  let startX=0, startY=0, startT=0, swiping=false, dragging=false
+
+  function onStart(e) {
+    if (isSliding) return
+    const t = e.touches ? e.touches[0] : e
+    startX = t.clientX; startY = t.clientY; startT = Date.now()
+    swiping = true; dragging = false
+  }
+
+  function onMove(e) {
+    if (!swiping || view !== 'monthly' || isSliding) return
+    const t = e.touches ? e.touches[0] : e
+    const dx = t.clientX - startX
+    const dy = t.clientY - startY
+    if (!dragging && Math.abs(dx) > 8 && Math.abs(dx) > Math.abs(dy)) {
+      dragging = true
+    }
+    if (!dragging) return
+    // 손가락 따라 슬라이더 이동
+    const slider = document.getElementById('monthlySlider')
+    const base = -33.333
+    const pct = (dx / window.innerWidth) * 100
+    slider.style.transition = 'none'
+    slider.style.transform = `translateX(${base + pct}%)`
+  }
+
+  function onEnd(e) {
+    if (!swiping) return
+    swiping = false
+
+    const t = e.changedTouches ? e.changedTouches[0] : e
+    const dx = t.clientX - startX
+    const dy = t.clientY - startY
+    const dt = Date.now() - startT
+
+    if (view === 'monthly' && dragging) {
+      dragging = false
+      const slider = document.getElementById('monthlySlider')
+      if (Math.abs(dx) > 50 && dt < 500 && Math.abs(dy) < Math.abs(dx)) {
+        // 충분히 스와이프 → 넘기기
+        slider.style.transition = ''
+        movePeriod(dx < 0 ? 1 : -1)
+      } else {
+        // 부족 → 원위치
+        slider.style.transition = 'transform 0.28s cubic-bezier(.4,0,.2,1)'
+        slider.style.transform = 'translateX(-33.333%)'
+      }
+      return
+    }
+
+    dragging = false
+    if (Math.abs(dx) < 40) return
+    if (Math.abs(dy) > Math.abs(dx) * 0.6) return
+    if (dt > 400) return
+    if (document.getElementById('dayPanel').classList.contains('on')) return
+    movePeriod(dx < 0 ? 1 : -1)
+  }
+
+  targets.forEach(el => {
+    if (!el) return
+    el.addEventListener('touchstart', onStart, { passive: true })
+    el.addEventListener('touchmove',  onMove,  { passive: true })
+    el.addEventListener('touchend',   onEnd,   { passive: true })
+  })
+})()
+
+/* ── INIT ───────────────────────────── */
+load()
+document.getElementById('herTabName').textContent=names.her
+document.getElementById('hisTabName').textContent=names.hi
+document.getElementById('herTabName').textContent=names.her
+document.getElementById('hisTabName').textContent=names.his
+curY=NOW.getFullYear(); curM=NOW.getMonth()
+render()
+</script>
+
+</body>
+</html>
